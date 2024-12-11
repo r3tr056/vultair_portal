@@ -1,122 +1,70 @@
-'use client'
-
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useState } from "react"
+import { useAuth } from "@/context/AuthProvider"
+import { FormEvent, useState } from "react"
 
-export default function AuthPage() {
-    const [isLogin, setIsLogin] = useState(true)
-    const [email, setEmail] = useState("")
-    const [password, setPassword] = useState("")
-    const [confirmPassword, setConfirmPassword] = useState("")
-    const [error, setError] = useState("")
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault()
-        setError("")
+export default function LoginPage() {
 
-        if (!email || !password) {
-            setError("Please fill in all fields")
-            return
+    const { login } = useAuth();
+
+    const [username, setUsername] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+
+    const handleSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        try {
+            await login({ username, password });
+        } catch (error) {
+            console.error("Login failed: ", error);
         }
-
-        if (!isLogin && password !== confirmPassword) {
-            setError("Passwords do not match")
-            return
-        }
-
-        // Here you would typically handle the login or registration logic
-        console.log(isLogin ? "Logging in..." : "Registering...", { email, password })
-    }
+    };
 
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gray-900">
-            <Card className="w-[350px] bg-gray-800 text-white">
-                <CardHeader>
-                    <CardTitle className="text-2xl font-bold text-center">Welcome</CardTitle>
-                    <CardDescription className="text-center text-gray-400">
-                        {isLogin ? "Login to your account" : "Create a new account"}
+        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+            <Card className="w-[350px] bg-white">
+                <CardHeader className="space-y-1">
+                    <CardTitle className="text-2xl text-center text-gray-800">Login</CardTitle>
+                    <CardDescription className="text-center text-gray-600">
+                        Enter your email and password to login
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
-                    <Tabs defaultValue="login" className="w-full">
-                        <TabsList className="grid w-full grid-cols-2 bg-gray-700">
-                            <TabsTrigger value="login" onClick={() => setIsLogin(true)}>Login</TabsTrigger>
-                            <TabsTrigger value="register" onClick={() => setIsLogin(false)}>Register</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="login">
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        placeholder="m@example.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="bg-gray-700 border-gray-600"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="password">Password</Label>
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="bg-gray-700 border-gray-600"
-                                    />
-                                </div>
-                                {error && <p className="text-red-500 text-sm">{error}</p>}
-                                <Button type="submit" className="w-full">Login</Button>
-                            </form>
-                        </TabsContent>
-                        <TabsContent value="register">
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email</Label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        placeholder="m@example.com"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        className="bg-gray-700 border-gray-600"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="password">Password</Label>
-                                    <Input
-                                        id="password"
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="bg-gray-700 border-gray-600"
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="confirm-password">Confirm Password</Label>
-                                    <Input
-                                        id="confirm-password"
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        className="bg-gray-700 border-gray-600"
-                                    />
-                                </div>
-                                {error && <p className="text-red-500 text-sm">{error}</p>}
-                                <Button type="submit" className="w-full">Register</Button>
-                            </form>
-                        </TabsContent>
-                    </Tabs>
-                </CardContent>
-                <CardFooter className="text-center text-sm text-gray-400">
-                    By continuing, you agree to our Terms of Service and Privacy Policy.
-                </CardFooter>
+                <form onSubmit={handleSubmit}>
+                    <CardContent className="grid gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="username">Username</Label>
+                            <Input id="username" type="text" placeholder="Enter your username" onChange={(e) => setUsername(e.target.value)} value={username} autoComplete="username" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="password" >Password</Label>
+                            <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Checkbox id="remember" />
+                            <label
+                                htmlFor="remember"
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                                Remember me
+                            </label>
+                        </div>
+                    </CardContent>
+
+                    <CardFooter className="flex flex-col">
+                        <Button className="w-full bg-green-600 hover:bg-green-700 text-white" type="submit">Login</Button>
+                        <p className="mt-2 text-center text-sm text-gray-800">
+                            Don't have an account?{" "}
+                            <a href="#" className="text-green-500 hover:underline">
+                                Sign up
+                            </a>
+                        </p>
+                    </CardFooter>
+                </form>
             </Card>
         </div>
     )
 }
+
